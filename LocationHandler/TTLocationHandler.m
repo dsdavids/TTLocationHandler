@@ -2,6 +2,7 @@
 //
 //  Created by Dean Davids on 3/29/12.
 //  Copyright (c) 2012 Dean S. Davids, Tailgate Technology. All rights reserved.
+//  http://www.tailgatetechnology.com
 //
 // Portions of this software Copyright (c) 2010, Long Weekend LLC
 // Long Weekend LLC credit for basis of the origination of this code.
