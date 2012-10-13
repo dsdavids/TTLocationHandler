@@ -18,6 +18,7 @@
 		1B3B7DFD1628FF6800AB3227 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 1B3B7DFC1628FF6800AB3227 /* Default-568h@2x.png */; };
 		1B3B7E001628FF6800AB3227 /* MainStoryboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 1B3B7DFE1628FF6800AB3227 /* MainStoryboard.storyboard */; };
 		1B3B7E031628FF6800AB3227 /* LMViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B3B7E021628FF6800AB3227 /* LMViewController.m */; };
+		1B3B7E0E162902AD00AB3227 /* TTLocationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B3B7E0D162902AD00AB3227 /* TTLocationHandler.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,8 @@
 		1B3B7DFF1628FF6800AB3227 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard.storyboard; sourceTree = "<group>"; };
 		1B3B7E011628FF6800AB3227 /* LMViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LMViewController.h; sourceTree = "<group>"; };
 		1B3B7E021628FF6800AB3227 /* LMViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LMViewController.m; sourceTree = "<group>"; };
+		1B3B7E0C162902AD00AB3227 /* TTLocationHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TTLocationHandler.h; path = LocationHandler/TTLocationHandler.h; sourceTree = SOURCE_ROOT; };
+		1B3B7E0D162902AD00AB3227 /* TTLocationHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TTLocationHandler.m; path = LocationHandler/TTLocationHandler.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +114,8 @@
 		1B3B7E091628FFD200AB3227 /* LocationHandler */ = {
 			isa = PBXGroup;
 			children = (
+				1B3B7E0C162902AD00AB3227 /* TTLocationHandler.h */,
+				1B3B7E0D162902AD00AB3227 /* TTLocationHandler.m */,
 			);
 			name = LocationHandler;
 			sourceTree = "<group>";
@@ -185,6 +190,7 @@
 				1B3B7DF31628FF6800AB3227 /* main.m in Sources */,
 				1B3B7DF71628FF6800AB3227 /* LMAppDelegate.m in Sources */,
 				1B3B7E031628FF6800AB3227 /* LMViewController.m in Sources */,
+				1B3B7E0E162902AD00AB3227 /* TTLocationHandler.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
