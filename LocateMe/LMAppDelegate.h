@@ -8,8 +8,11 @@
 
 #import <UIKit/UIKit.h>
 
+@class TTLocationHandler;
+
 @interface LMAppDelegate : UIResponder <UIApplicationDelegate>
 
 @property (strong, nonatomic) UIWindow *window;
+@property (nonatomic, strong)TTLocationHandler *sharedLocationHandler;
 
 @end

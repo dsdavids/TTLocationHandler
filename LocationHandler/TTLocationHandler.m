@@ -13,7 +13,6 @@
 @property(nonatomic) BOOL highwayMode;
 
 -(void) _stopUpdatingLocation;
--(void) _startUpdatingLocationWithSwitch:(NSNotification *)_notification;
 -(void) _startUpdatingLocationContinueUpdates;
 -(void) _saveLocationAndNotifyObservers:(CLLocation *)locationToSave;
 -(void) _acceptBestAvailableLocation:(id)sender;
@@ -39,7 +38,6 @@
 }
 
 @synthesize highwayMode = _highwayMode;
-
 @synthesize locationManager = _locationManager;
 @synthesize currentLocation = _currentLocation;
 @synthesize continuesUpdatingWhileActive = _continuesUpdatingWhileActive;
@@ -48,7 +46,7 @@
 @synthesize recencyThreshold = _recencyThreshold;
 @synthesize locationManagerPurposeString = _locationManagerPurposeString;
 
-#define OUTPUT_LOGS 0
+#define OUTPUT_LOGS 1
 
 static const int MAX_TRIES_FOR_ACCURACY =10;
 
@@ -77,6 +75,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
       self.locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
       self.locationManager.distanceFilter = 10.0f;
       self.requiredAccuracy = 10.0f;
+      // New property for iOS6
       if ([self.locationManager respondsToSelector:@selector(activityType)]) {
           self.locationManager.activityType = CLActivityTypeAutomotiveNavigation;
       }
@@ -89,10 +88,9 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
       _pendingLocationsQueue = [[NSMutableArray alloc] init];
 
       // Register an observer for if/when this app goes into background & comes back to foreground
-      // NOTE: THIS CODE IS iOS4.0+ ONLY.  If you want iOS3 compatibility, check for NULL pointers
-      // on the notification names first.
+      // NOTE: THIS CODE IS iOS4.0+ ONLY.
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_stopUpdatingLocation) name:UIApplicationDidEnterBackgroundNotification object:nil];
-      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocationWithSwitch:) name:UIApplicationDidFinishLaunchingNotification object:nil];
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocationContinueUpdates) name:UIApplicationDidFinishLaunchingNotification object:nil];
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocationContinueUpdates) name:UIApplicationWillEnterForegroundNotification object:nil];
       
       // Register for battery state change monitoring to enable active location monitoring in background if the device is plugged in to power
@@ -110,7 +108,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
 
 -(void)setHighwayMode:(BOOL)highwayMode {
     // If we are in the background, plugged into charger and travelling at highway speed, the location manager is pumping out
-    // out new updates several time a second unnecessarily. We'll cut down the activity by changing the distance filter in
+    // out new updates several times a second unnecessarily. We'll cut down the activity by changing the distance filter in
     // in highway mode. Highway mode is set yes or no every time we get an update so we want to check if it is being changed
     // to a new value before altering the location manager property.
     if (highwayMode != _highwayMode) {
@@ -127,13 +125,18 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     }
 }
 
+/*
+ * Gives current location if it has been set
+ * instead of returning nil, it will check user defaults for the last known location.
+ * If no location has ever been set, returns an arbitrary default
+ */
 -(CLLocation *)currentLocation {
-    if (_currentLocation != nil) {
+    if (_currentLocation) {
         return _currentLocation;
     }
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *locationInfo = [defaults objectForKey:@"LAST_KNOWN_LOCATION"];
-    if (locationInfo != nil) {
+    if (locationInfo) {
         // Create a new location from the last known info saved in user defaults
         CLLocationDegrees lastKnownLat = [[locationInfo valueForKey:@"LATITUDE"] doubleValue];
         CLLocationDegrees lastKnownLong = [[locationInfo valueForKey:@"LONGITUDE"] doubleValue];
@@ -232,6 +235,10 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     return YES;
 }
 
+/**
+ * For clearing all monitored regions prior to refreshing your list monitored regions based on
+ * a significant change in location.
+ */
 - (void)removeAllMonitoredRegions {
     NSSet *regions = self.locationManager.monitoredRegions;
     for (CLRegion *theRegion in regions) {
@@ -240,15 +247,15 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     if (OUTPUT_LOGS) NSLog(@"Removed all Monitored Regions");
 }
 
+/**
+ * Get a region of defined radius from current location only
+ */
 -(CLRegion *)currentRegionWithRadius:(CLLocationDistance)radius {
     CLLocation *workingLocation = [self.currentLocation copy];
-    if ([self isReadingRecentForLocation:workingLocation]) {
-        CLRegion *theRegion = [[CLRegion alloc] initCircularRegionWithCenter:workingLocation.coordinate 
-                                                                      radius:radius 
-                                                                  identifier:@"currentRegion"];
-        return theRegion;
-    }
-    return nil;
+    CLRegion *theRegion = [[CLRegion alloc] initCircularRegionWithCenter:workingLocation.coordinate 
+                                                                  radius:radius 
+                                                              identifier:@"currentRegion"];
+    return theRegion;
 }
 
 #pragma mark -
@@ -430,28 +437,11 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
 /**
  * Starts updating the location in realtime,
  * Stops the background monitoring.
- * Called when the application is launched from terminal state
- */
-- (void) _startUpdatingLocationWithSwitch:(NSNotification *)_notification
-{
-    if ([CLLocationManager significantLocationChangeMonitoringAvailable])
-    {
-      if (OUTPUT_LOGS) NSLog(@"Stopped monitoring for significant changes");
-    [[self locationManager] stopMonitoringSignificantLocationChanges];
-    }
-
-    // note that we can make this call even if it's already updating no problem
-    [[self locationManager] startUpdatingLocation];
-    if (OUTPUT_LOGS) NSLog(@"Started updating location");
-}
-
-/**
- * Starts updating the location in realtime,
- * Stops the background monitoring.
  * Called when the application is launched to the foreground
  */
 - (void) _startUpdatingLocationContinueUpdates
 {
+    // Setting curentLocation to nil ensures we will try to update with accurate location on next cycle
     _currentLocation = nil;
     if ([CLLocationManager significantLocationChangeMonitoringAvailable])
     {
@@ -459,7 +449,6 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
         [[self locationManager] stopMonitoringSignificantLocationChanges];
     }
     
-    // note that we can make this call even if it's already updating no problem
     [[self locationManager] startUpdatingLocation];
     if (OUTPUT_LOGS) NSLog(@"Started updating location");
 }
@@ -540,6 +529,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
         });
 }
 
+// Changing status bar to indicate status of location updates
 -(void) _updateStatusBarStyleActive:(NSNumber *)active {
     BOOL existingLocationIsAccurate = [self isLocationWithinRequiredAccuracy:self.currentLocation];
     UIApplication *app = [UIApplication sharedApplication];
@@ -570,7 +560,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     
     // get current location update
     self.currentLocation = nil;
-    [self _startUpdatingLocationWithSwitch:nil];
+    [self _startUpdatingLocationContinueUpdates];
 }
 
 //! ONLY IMPLEMENTED on IPHONE 4
@@ -583,7 +573,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     
     // get current location update
     self.currentLocation = nil;
-    [self _startUpdatingLocationWithSwitch:nil];
+    [self _startUpdatingLocationContinueUpdates];
 }
 
 //! ONLY IMPLEMENTED on IPHONE 4
@@ -604,7 +594,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
  */
 - (BOOL) isLocationWithinRequiredAccuracy:(CLLocation *)location
 {
-  if (location == nil) return NO;
+  if (!location) return NO;
 	else return location.horizontalAccuracy <= self.requiredAccuracy;
 }
 
