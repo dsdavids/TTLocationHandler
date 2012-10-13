@@ -13,7 +13,7 @@
 @property(nonatomic) BOOL highwayMode;
 
 -(void) _stopUpdatingLocation;
--(void) _startUpdatingLocationContinueUpdates;
+-(void) _startUpdatingLocation;
 -(void) _saveLocationAndNotifyObservers:(CLLocation *)locationToSave;
 -(void) _acceptBestAvailableLocation:(id)sender;
 -(void) _syncBackgroundUpdatesFlagWithBatteryState;
@@ -48,7 +48,7 @@
 
 #define OUTPUT_LOGS 1
 
-static const int MAX_TRIES_FOR_ACCURACY =10;
+static const int MAX_TRIES_FOR_ACCURACY = 10;
 
 //! Custom initializer, creates location manager instance
 - (id) init
@@ -90,16 +90,15 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
       // Register an observer for if/when this app goes into background & comes back to foreground
       // NOTE: THIS CODE IS iOS4.0+ ONLY.
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_stopUpdatingLocation) name:UIApplicationDidEnterBackgroundNotification object:nil];
-      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocationContinueUpdates) name:UIApplicationDidFinishLaunchingNotification object:nil];
-      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocationContinueUpdates) name:UIApplicationWillEnterForegroundNotification object:nil];
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocation) name:UIApplicationDidFinishLaunchingNotification object:nil];
+      [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocation) name:UIApplicationWillEnterForegroundNotification object:nil];
       
       /*
        ** Register for battery state change monitoring to enable active location monitoring in background if the device is plugged in to power
        ** We revert to significant location changes only if app is in background and device is not plugged into external power.
        */
       [UIDevice currentDevice].batteryMonitoringEnabled = YES;
-      _updateInBackground = [UIDevice currentDevice].batteryState == UIDeviceBatteryStateCharging;
-      if (OUTPUT_LOGS) NSLog(@"updateInBackground initially set to %@", _updateInBackground ? @"YES" : @"NO");
+      _updateInBackground = YES;
       
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_batteryStateDidChange:) name:UIDeviceBatteryStateDidChangeNotification object:nil];
   }
@@ -111,7 +110,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
 
 -(void)setHighwayMode:(BOOL)highwayMode {
     /*
-     ** If we are in the background, plugged into charger and travelling at highway speed, the location manager is pumping out
+     ** If we are in the background, plugged into charger and travelling at highway speed, the location manager is pumping
      ** out new updates several times a second unnecessarily. We'll cut down the activity by changing the distance filter in
      ** highway mode. Highway mode is set yes or no every time we get an update so we want to check if it is being changed
      ** to a new value before actually altering the location manager property.
@@ -135,7 +134,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
  ** instead of returning nil, it will check user defaults for the last known location.
  ** If no location has ever been set, returns an arbitrary default
  ** The logic here is questionable but if I let it return nil it causes problems and I didn't want to be checking for nil everywhere that I use the property.
- ** In reality, it is very unlikely to ever return the arbitrary location as the manager starts updating immediately on init and, unless this is the very
+ ** In reality, it is very unlikely to ever return the arbitrary default location as the manager starts updating immediately on init and, unless this is the very
  ** first startup on the device, we have stored last known location info in user defaults.
  */
 -(CLLocation *)currentLocation {
@@ -211,7 +210,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     
     [self _syncBackgroundUpdatesFlagWithBatteryState];
     if (_updateInBackground) {
-        [self _startUpdatingLocationContinueUpdates];
+        [self _startUpdatingLocation];
     }
     
     if (OUTPUT_LOGS) NSLog(@"Updates In Background property set to %@",(_updatesInBackgroundWhenCharging ? @"YES" : @"NO"));
@@ -312,7 +311,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
             
             /* The existing location is either old or inaccurate, if our new location is an accurate location, we'll use it
              ** otherwise we are going to save it in a pending queue and wait to see if a better one comes in.
-             ** We are also setting a cap, if we have already have the max number of locations pending we will go ahead and take
+             ** We are also setting a cap, if we already have the max number of locations pending we will go ahead and take
              ** this one regardless of accuracy.
              */
             if ([self isLocationWithinRequiredAccuracy:newLocation] ) {
@@ -450,7 +449,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
  * Stops the background monitoring.
  * Called when the application is launched to the foreground
  */
-- (void) _startUpdatingLocationContinueUpdates
+- (void) _startUpdatingLocation
 {
     // Setting curentLocation to nil ensures we will try to update with accurate location on next cycle
     _currentLocation = nil;
@@ -487,18 +486,18 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     // it every time we get a new location update. This way if user has it plugged in
     // and active, goes to background and then unplugs it, it will stop updating after
     // the next go around.
-    if (self.updatesInBackgroundWhenCharging) {
-        UIDevice *currentDevice = [UIDevice currentDevice];
-        UIDeviceBatteryState currentBatteryState = [currentDevice batteryState];
-        if (currentBatteryState == UIDeviceBatteryStateCharging || currentBatteryState == UIDeviceBatteryStateFull) {
-            _updateInBackground = YES;
-        } else {
-            _updateInBackground = NO;
-            // The flag, having been set to no, will cause locationManager to stop on the next update
-        }
-        
+    if (!self.updatesInBackgroundWhenCharging) {
+        _updateInBackground = NO;
+        return;
+    }
+    
+    UIDevice *currentDevice = [UIDevice currentDevice];
+    UIDeviceBatteryState currentBatteryState = [currentDevice batteryState];
+    if (currentBatteryState == UIDeviceBatteryStateCharging || currentBatteryState == UIDeviceBatteryStateFull) {
+        _updateInBackground = YES;
     } else {
         _updateInBackground = NO;
+        // The flag, having been set to no, will cause locationManager to stop on the next update
     }
 }
 
@@ -526,7 +525,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
                 UIDeviceBatteryState currentBatteryState = [[UIDevice currentDevice] batteryState];
                 if (currentBatteryState == UIDeviceBatteryStateCharging || currentBatteryState == UIDeviceBatteryStateFull) {
                     _updateInBackground = YES;
-                    [self _startUpdatingLocationContinueUpdates];
+                    [self _startUpdatingLocation];
                 }
             }
                 
@@ -571,7 +570,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     
     // get current location update
     self.currentLocation = nil;
-    [self _startUpdatingLocationContinueUpdates];
+    [self _startUpdatingLocation];
 }
 
 //! ONLY IMPLEMENTED on IPHONE 4
@@ -584,7 +583,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
     
     // get current location update
     self.currentLocation = nil;
-    [self _startUpdatingLocationContinueUpdates];
+    [self _startUpdatingLocation];
 }
 
 //! ONLY IMPLEMENTED on IPHONE 4
