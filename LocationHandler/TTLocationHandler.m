@@ -5,7 +5,6 @@
 //
 
 #import "TTLocationHandler.h"
-#import "TestFlight.h"
 
 
 // Private methods
