@@ -1,0 +1,28 @@
+# Mac OS X
+.DS_Store
+
+# Generated Files
+*.pyc
+*.[oa]
+*.6
+*6.out
+docs/output/
+docs/output-docset/
+
+# Python modules
+MANIFEST
+dist/
+build/
+
+# Xcode
+Breakpoints.xcbkptlist
+xcuserdata
+*.xcworkspace
+*.xcuserstate
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# Backup Files
+*~.nib

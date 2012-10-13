@@ -83,6 +83,7 @@
 		1B3B7DEC1628FF6800AB3227 /* LocateMe */ = {
 			isa = PBXGroup;
 			children = (
+				1B3B7E091628FFD200AB3227 /* LocationHandler */,
 				1B3B7DF51628FF6800AB3227 /* LMAppDelegate.h */,
 				1B3B7DF61628FF6800AB3227 /* LMAppDelegate.m */,
 				1B3B7DFE1628FF6800AB3227 /* MainStoryboard.storyboard */,
@@ -105,6 +106,13 @@
 				1B3B7DFC1628FF6800AB3227 /* Default-568h@2x.png */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		1B3B7E091628FFD200AB3227 /* LocationHandler */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = LocationHandler;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -258,6 +266,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LocateMe/LocateMe-Prefix.pch";
 				INFOPLIST_FILE = "LocateMe/LocateMe-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
@@ -269,6 +278,7 @@
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LocateMe/LocateMe-Prefix.pch";
 				INFOPLIST_FILE = "LocateMe/LocateMe-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 5.1;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WRAPPER_EXTENSION = app;
 			};
