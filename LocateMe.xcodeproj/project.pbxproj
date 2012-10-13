@@ -47,6 +47,7 @@
 		1B3B7E11162903CF00AB3227 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
 		1B3B7E131629207200AB3227 /* LMAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LMAnnotation.h; sourceTree = "<group>"; };
 		1B3B7E141629207200AB3227 /* LMAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LMAnnotation.m; sourceTree = "<group>"; };
+		1B3B7E16162A20B600AB3227 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +69,7 @@
 		1B3B7DD71628FF6800AB3227 = {
 			isa = PBXGroup;
 			children = (
+				1B3B7E16162A20B600AB3227 /* README.md */,
 				1B3B7DEC1628FF6800AB3227 /* LocateMe */,
 				1B3B7DE51628FF6800AB3227 /* Frameworks */,
 				1B3B7DE31628FF6800AB3227 /* Products */,
