@@ -21,6 +21,7 @@
 		1B3B7E0E162902AD00AB3227 /* TTLocationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B3B7E0D162902AD00AB3227 /* TTLocationHandler.m */; };
 		1B3B7E10162903B500AB3227 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B3B7E0F162903B500AB3227 /* CoreLocation.framework */; };
 		1B3B7E12162903CF00AB3227 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B3B7E11162903CF00AB3227 /* MapKit.framework */; };
+		1B3B7E151629207200AB3227 /* LMAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B3B7E141629207200AB3227 /* LMAnnotation.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,6 +45,8 @@
 		1B3B7E0D162902AD00AB3227 /* TTLocationHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TTLocationHandler.m; path = LocationHandler/TTLocationHandler.m; sourceTree = SOURCE_ROOT; };
 		1B3B7E0F162903B500AB3227 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		1B3B7E11162903CF00AB3227 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		1B3B7E131629207200AB3227 /* LMAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LMAnnotation.h; sourceTree = "<group>"; };
+		1B3B7E141629207200AB3227 /* LMAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LMAnnotation.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +103,8 @@
 				1B3B7DFE1628FF6800AB3227 /* MainStoryboard.storyboard */,
 				1B3B7E011628FF6800AB3227 /* LMViewController.h */,
 				1B3B7E021628FF6800AB3227 /* LMViewController.m */,
+				1B3B7E131629207200AB3227 /* LMAnnotation.h */,
+				1B3B7E141629207200AB3227 /* LMAnnotation.m */,
 				1B3B7DED1628FF6800AB3227 /* Supporting Files */,
 			);
 			path = LocateMe;
@@ -199,6 +204,7 @@
 				1B3B7DF71628FF6800AB3227 /* LMAppDelegate.m in Sources */,
 				1B3B7E031628FF6800AB3227 /* LMViewController.m in Sources */,
 				1B3B7E0E162902AD00AB3227 /* TTLocationHandler.m in Sources */,
+				1B3B7E151629207200AB3227 /* LMAnnotation.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

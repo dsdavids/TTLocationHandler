@@ -93,7 +93,10 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocationContinueUpdates) name:UIApplicationDidFinishLaunchingNotification object:nil];
       [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_startUpdatingLocationContinueUpdates) name:UIApplicationWillEnterForegroundNotification object:nil];
       
-      // Register for battery state change monitoring to enable active location monitoring in background if the device is plugged in to power
+      /*
+       ** Register for battery state change monitoring to enable active location monitoring in background if the device is plugged in to power
+       ** We revert to significant location changes only if app is in background and device is not plugged into external power.
+       */
       [UIDevice currentDevice].batteryMonitoringEnabled = YES;
       _updateInBackground = [UIDevice currentDevice].batteryState == UIDeviceBatteryStateCharging;
       if (OUTPUT_LOGS) NSLog(@"updateInBackground initially set to %@", _updateInBackground ? @"YES" : @"NO");
@@ -107,10 +110,12 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
 #pragma mark Accessors
 
 -(void)setHighwayMode:(BOOL)highwayMode {
-    // If we are in the background, plugged into charger and travelling at highway speed, the location manager is pumping out
-    // out new updates several times a second unnecessarily. We'll cut down the activity by changing the distance filter in
-    // in highway mode. Highway mode is set yes or no every time we get an update so we want to check if it is being changed
-    // to a new value before altering the location manager property.
+    /*
+     ** If we are in the background, plugged into charger and travelling at highway speed, the location manager is pumping out
+     ** out new updates several times a second unnecessarily. We'll cut down the activity by changing the distance filter in
+     ** highway mode. Highway mode is set yes or no every time we get an update so we want to check if it is being changed
+     ** to a new value before actually altering the location manager property.
+     */
     if (highwayMode != _highwayMode) {
         CGFloat highwayDistanceFilter = 400.00f;
         CGFloat cityDistanceFilter = 10.00f;
@@ -126,9 +131,12 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
 }
 
 /*
- * Gives current location if it has been set
- * instead of returning nil, it will check user defaults for the last known location.
- * If no location has ever been set, returns an arbitrary default
+ ** Gives current location if it has been set
+ ** instead of returning nil, it will check user defaults for the last known location.
+ ** If no location has ever been set, returns an arbitrary default
+ ** The logic here is questionable but if I let it return nil it causes problems and I didn't want to be checking for nil everywhere that I use the property.
+ ** In reality, it is very unlikely to ever return the arbitrary location as the manager starts updating immediately on init and, unless this is the very
+ ** first startup on the device, we have stored last known location info in user defaults.
  */
 -(CLLocation *)currentLocation {
     if (_currentLocation) {
@@ -182,30 +190,32 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
 
 -(void)setUpdatesInBackgroundWhenCharging:(BOOL)updatesInBackgroundWhenCharging {
     // If it already is set the same, do nothing
-    if (_updatesInBackgroundWhenCharging != updatesInBackgroundWhenCharging) {
-        // Setting is new, enable/disable battery monitoring and set ivars
-        UIDevice *currentDevice = [UIDevice currentDevice];
-        currentDevice.batteryMonitoringEnabled = updatesInBackgroundWhenCharging;
-        _updatesInBackgroundWhenCharging = updatesInBackgroundWhenCharging;
-        
-        if (updatesInBackgroundWhenCharging) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_batteryStateDidChange:) name:UIDeviceBatteryStateDidChangeNotification object:nil];
-            });
-        } else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-               [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceBatteryStateDidChangeNotification object:Nil]; 
-            });
-        }
-        
-        [self _syncBackgroundUpdatesFlagWithBatteryState];
-        if (_updateInBackground) {
-            [self _startUpdatingLocationContinueUpdates];
-        }
-        
-        if (OUTPUT_LOGS) NSLog(@"Updates In Background property set to %@",(_updatesInBackgroundWhenCharging ? @"YES" : @"NO"));
-        if (OUTPUT_LOGS) NSLog(@"updateInBackground Flag set to %@",(_updateInBackground ? @"YES" : @"NO"));
+    if (_updatesInBackgroundWhenCharging == updatesInBackgroundWhenCharging) {
+        return;
     }
+    
+    // Setting is new, enable/disable battery monitoring and set ivars
+    UIDevice *currentDevice = [UIDevice currentDevice];
+    currentDevice.batteryMonitoringEnabled = updatesInBackgroundWhenCharging;
+    _updatesInBackgroundWhenCharging = updatesInBackgroundWhenCharging;
+    
+    if (updatesInBackgroundWhenCharging) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_batteryStateDidChange:) name:UIDeviceBatteryStateDidChangeNotification object:nil];
+        });
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+           [[NSNotificationCenter defaultCenter] removeObserver:self name:UIDeviceBatteryStateDidChangeNotification object:Nil]; 
+        });
+    }
+    
+    [self _syncBackgroundUpdatesFlagWithBatteryState];
+    if (_updateInBackground) {
+        [self _startUpdatingLocationContinueUpdates];
+    }
+    
+    if (OUTPUT_LOGS) NSLog(@"Updates In Background property set to %@",(_updatesInBackgroundWhenCharging ? @"YES" : @"NO"));
+    if (OUTPUT_LOGS) NSLog(@"updateInBackground Flag set to %@",(_updateInBackground ? @"YES" : @"NO"));
 }
 
 #pragma mark -
@@ -263,8 +273,8 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
 
 
 /**
- * Main delegate method for CLLocationManager.
- * Called when location is updated - makes decisions about whether or not to update class instance variable currentLocation
+ ** Main delegate method for CLLocationManager.
+ ** Called when location is updated - makes decisions about whether or not to update class instance variable currentLocation
  */
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
@@ -300,10 +310,11 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
             NSNumber *activeYes = [NSNumber numberWithBool:YES];
             [self performSelectorOnMainThread:@selector(_updateStatusBarStyleActive:) withObject:activeYes waitUntilDone:NO];
             
-            // The existing location is either old or inaccurate, if our new location is an accurate location, we'll use it
-            // otherwise we are going to save it in a pending queue and wait to see if a better one comes in.
-            // We are also setting a cap, if we have already have the max number of locations pending we will go ahead and take
-            // this one regardless of accuracy.
+            /* The existing location is either old or inaccurate, if our new location is an accurate location, we'll use it
+             ** otherwise we are going to save it in a pending queue and wait to see if a better one comes in.
+             ** We are also setting a cap, if we have already have the max number of locations pending we will go ahead and take
+             ** this one regardless of accuracy.
+             */
             if ([self isLocationWithinRequiredAccuracy:newLocation] ) {
                 // New location is good, clear the pending queue and save this one.
                 [_pendingLocationsTimer invalidate];
@@ -324,7 +335,7 @@ static const int MAX_TRIES_FOR_ACCURACY =10;
                 [_pendingLocationsQueue removeAllObjects];
             } else {
                 // It's not within our requested accuracy preference and we haven't reached limit of tries
-                // save to the queue and see if we get a better one before our set wait time.
+                // save to the queue and see if we get a better one before our set wait time expiration.
                 [_pendingLocationsQueue addObject:[newLocation copy]];
                 if (OUTPUT_LOGS) NSLog(@"Location %i queued for possible acceptance",_pendingLocationsQueue.count);
                 
