@@ -297,6 +297,9 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
  */
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
+    // since the oldLocation might be from some previous use of core location, we need to make sure we're getting data from this run
+    if (oldLocation == nil) return;
+    
     UIApplication *app = [UIApplication sharedApplication];
     __block UIBackgroundTaskIdentifier UpdatingLocationTaskID = [app beginBackgroundTaskWithExpirationHandler:^{
         dispatch_async(dispatch_get_main_queue(), ^{
