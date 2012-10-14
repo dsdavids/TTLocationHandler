@@ -54,6 +54,7 @@
 {
     NSMutableArray *_pendingLocationsQueue;
     NSTimer *_pendingLocationsTimer;
+    NSTimeInterval _pendingLocationsTimerDuration;
     BOOL _updateInBackground;
 }
 
@@ -106,6 +107,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
                 NSLocalizedString(@"LOCATION SERVICES IS AN IMPORTANT FEATURE ALLOWING ACCESS TO YOUR GPS AND WI-FI HARDWARE TO ATTAIN POSITION INFO", @"Default string for location services enable dialog");
       
       _pendingLocationsQueue = [[NSMutableArray alloc] init];
+      _pendingLocationsTimerDuration = 10;
 
       // Register an observer for if/when this app goes into background & comes back to foreground
       // NOTE: THIS CODE IS iOS4.0+ ONLY.
@@ -364,7 +366,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
                 // set up a timer to limit how long we'll wait before taking what we have.
                 [_pendingLocationsTimer invalidate];
                 _pendingLocationsTimer = nil;
-                _pendingLocationsTimer = [NSTimer timerWithTimeInterval:10.0 
+                _pendingLocationsTimer = [NSTimer timerWithTimeInterval:_pendingLocationsTimerDuration
                                                                 target:self 
                                                             selector:@selector(_acceptBestAvailableLocation:) 
                                                             userInfo:nil repeats:NO];
