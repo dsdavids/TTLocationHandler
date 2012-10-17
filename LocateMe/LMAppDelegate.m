@@ -29,12 +29,24 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
+    /*
+     // NOTE: for this demo to worki in the simulator, go to the menu "Debug/Location/Freeway Drive" and enable
+     // to simulate the location events.
+     */
+    
     // Override point for customization after application launch.
     // Set up the location handler.
     self.sharedLocationHandler = [[TTLocationHandler alloc] init];
     self.sharedLocationHandler.locationManagerPurposeString =
     NSLocalizedString(@"LOCATION SERVICES ARE REQUIRED FOR THE PURPOSES OF THE APPLICATION TESTING", @"Location services request purpose string.");
+    
+    // Set background status. Update continuosly in background only when plugged in or regardless of power state.
     self.sharedLocationHandler.updatesInBackgroundWhenCharging = YES;
+    // UPDATING IN BACKGROUND WHILE ON BATTERY WILL IMPACT THE USER'S BATTERY LIFE CONSIDERABLY
+    self.sharedLocationHandler.continuesUpdatingOnBattery = YES;
+    
+    // Set interval of notices on change of location
+    self.sharedLocationHandler.recencyThreshold = 5.0;
     
     return YES;
 }

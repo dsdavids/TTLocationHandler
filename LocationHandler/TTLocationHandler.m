@@ -62,6 +62,7 @@
 @synthesize locationManager = _locationManager;
 @synthesize currentLocation = _currentLocation;
 @synthesize continuesUpdatingWhileActive = _continuesUpdatingWhileActive;
+@synthesize continuesUpdatingOnBattery = _continuesUpdatingOnBattery;
 @synthesize updatesInBackgroundWhenCharging = _updatesInBackgroundWhenCharging;
 @synthesize requiredAccuracy = _requiredAccuracy;
 @synthesize recencyThreshold = _recencyThreshold;
@@ -84,6 +85,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
       
       // Default behaviour is to continually update position whenever app is in foreground and whenever the device is plugged in.
       _continuesUpdatingWhileActive = YES;
+      _continuesUpdatingOnBattery = NO;
       _updatesInBackgroundWhenCharging = YES;
       
       // Initial highway mode setting is NO
@@ -521,7 +523,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
     if (currentBatteryState == UIDeviceBatteryStateCharging || currentBatteryState == UIDeviceBatteryStateFull) {
         _updateInBackground = YES;
     } else {
-        _updateInBackground = NO;
+        _updateInBackground = self.continuesUpdatingOnBattery;
         // The flag, having been set to no, will cause locationManager to stop on the next update
     }
 }
@@ -546,11 +548,13 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
     
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
             _updateInBackground = NO;
-            if (self.updatesInBackgroundWhenCharging) {
+            if (self.updatesInBackgroundWhenCharging || self.continuesUpdatingOnBattery) {
                 UIDeviceBatteryState currentBatteryState = [[UIDevice currentDevice] batteryState];
                 if (currentBatteryState == UIDeviceBatteryStateCharging || currentBatteryState == UIDeviceBatteryStateFull) {
                     _updateInBackground = YES;
                     [self _startUpdatingLocation];
+                } else {
+                    _updateInBackground = self.continuesUpdatingOnBattery;
                 }
             }
                 
