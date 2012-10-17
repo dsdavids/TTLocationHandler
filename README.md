@@ -17,7 +17,8 @@ In this repository, you will find one class header and implementation that you w
 
 ##Power usage and Background Operation Notes:  
 - The default is allow continuous updating of location when the application is in foreground. This can be set on or off.  
-- The default is to switch to significantUpdates only when in the background. There is a setting for continuous updates in background when the device is plugged into external power.  
+- The default is to switch to significantUpdates only when in the background. There is a setting for continuous updates in background when the device is plugged into external power. 
+- You can also set continuesUpdatingOnBattery. Use this responsibly as it will impact batter life considerably.  
 - The locationManager distanceFilter is increased at highway speeds as events come in scary fast and it seems a waste of activity.  
 - Make note of the backgroundTaskIdentifier assignment. The operations were very unreliable before I included this. I recommend using the begin and end task lines where ever you address responding to the location notification. I also recommend putting those operations on a global queue.  
 
