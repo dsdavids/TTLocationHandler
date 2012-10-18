@@ -41,10 +41,10 @@
     
     // Set up the PinTracker
     self.pinTracker = [[LMPinTracker alloc]init];
-    self.pinTracker.uploadInterval = 30.00;
+    self.pinTracker.uploadInterval = 60.0;
     
     // Set up the location handler.
-    self.sharedLocationHandler = [[TTLocationHandler alloc] init];
+    self.sharedLocationHandler = [TTLocationHandler sharedLocationHandler];
     self.sharedLocationHandler.locationManagerPurposeString =
     NSLocalizedString(@"LOCATION SERVICES ARE REQUIRED FOR THE PURPOSES OF THE APPLICATION TESTING", @"Location services request purpose string.");
     
@@ -54,7 +54,7 @@
     self.sharedLocationHandler.continuesUpdatingOnBattery = YES;
     
     // Set interval of notices on change of location
-    self.sharedLocationHandler.recencyThreshold = 5.0;
+    self.sharedLocationHandler.recencyThreshold = 10.0;
     
     return YES;
 }

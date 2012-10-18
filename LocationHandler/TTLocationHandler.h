@@ -30,6 +30,9 @@
 //! Responsible for all Core Location interaction, implements delegate methods of CLLocationManager
 @interface TTLocationHandler : NSObject <CLLocationManagerDelegate>
 
+//  Singleton class method to retrieve or create
++ (id) sharedLocationHandler;
+
 //! Helper function to determine if this reading is good enough in terms of accuracy
 - (BOOL) isLocationWithinRequiredAccuracy:(CLLocation *)location;
 
@@ -46,7 +49,7 @@
 -(CLRegion *)currentRegionWithRadius:(CLLocationDistance)radius;
 
 @property (nonatomic, strong) CLLocationManager *locationManager;
-@property (nonatomic, copy) CLLocation *currentLocation;
+@property (nonatomic, copy) CLLocation *lastKnownLocation;
 
 // Monitoring options
 @property (nonatomic) BOOL continuesUpdatingWhileActive;

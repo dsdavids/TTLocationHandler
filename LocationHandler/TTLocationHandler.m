@@ -60,7 +60,7 @@
 
 @synthesize highwayMode = _highwayMode;
 @synthesize locationManager = _locationManager;
-@synthesize currentLocation = _currentLocation;
+@synthesize lastKnownLocation = _lastKnownLocation;
 @synthesize continuesUpdatingWhileActive = _continuesUpdatingWhileActive;
 @synthesize continuesUpdatingOnBattery = _continuesUpdatingOnBattery;
 @synthesize updatesInBackgroundWhenCharging = _updatesInBackgroundWhenCharging;
@@ -72,6 +72,16 @@
 
 static const int MAX_TRIES_FOR_ACCURACY = 10;
 
++ (id)sharedLocationHandler {
+    static dispatch_once_t pred;
+    static TTLocationHandler *locationHandlerSingleton = nil;
+    
+    dispatch_once(&pred, ^{
+        locationHandlerSingleton = [[self alloc] init];
+    });
+    return locationHandlerSingleton;
+}
+
 //! Custom initializer, creates location manager instance
 - (id) init
 {
@@ -81,7 +91,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
       _recencyThreshold = 60;
       
       // Clear current value to be sure we start fresh
-      _currentLocation = nil;
+      _lastKnownLocation = nil;
       
       // Default behaviour is to continually update position whenever app is in foreground and whenever the device is plugged in.
       _continuesUpdatingWhileActive = YES;
@@ -161,9 +171,9 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
  ** In reality, it is very unlikely to ever return the arbitrary default location as the manager starts updating immediately on init and, unless this is the very
  ** first startup on the device, we have stored last known location info in user defaults.
  */
--(CLLocation *)currentLocation {
-    if (_currentLocation) {
-        return _currentLocation;
+-(CLLocation *)lastKnownLocation {
+    if (_lastKnownLocation) {
+        return _lastKnownLocation;
     }
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *locationInfo = [defaults objectForKey:@"LAST_KNOWN_LOCATION"];
@@ -179,7 +189,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
                                                                verticalAccuracy:-1 
                                                                       timestamp:[lastKnownTimestamp dateByAddingTimeInterval:-self.recencyThreshold]];
         if (OUTPUT_LOGS) NSLog(@"Last Known Location Retrieved = %@",mostRecentLocation);
-        self.currentLocation = mostRecentLocation;
+        _lastKnownLocation = mostRecentLocation;
     } else {
         CLLocationDegrees defaultLat = [[defaults objectForKey:@"DEFAULT_LOCATION_LATITUDE"] doubleValue];
         CLLocationDegrees defaultLong = [[defaults objectForKey:@"DEFAULT_LOCATION_LONGITUDE"] doubleValue];
@@ -189,20 +199,20 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
                                                           horizontalAccuracy:self.requiredAccuracy * 1000 
                                                             verticalAccuracy:-1 
                                                                    timestamp:[NSDate dateWithTimeIntervalSinceNow:-self.recencyThreshold * 10]];
-        self.currentLocation = defaultLocation;
+        self.lastKnownLocation = defaultLocation;
         if (OUTPUT_LOGS) NSLog(@"Default Location retrieved = %@",defaultLocation);
     }
     
-    return _currentLocation;
+    return _lastKnownLocation;
 }
 
--(void)setCurrentLocation:(CLLocation *)currentLocation {
+-(void)setLastKnownLocation:(CLLocation *)currentLocation {
     NSLog(@"setting location to %@",currentLocation);
     
-    _currentLocation = [currentLocation copy];
+    _lastKnownLocation = [currentLocation copy];
     
-    if (CLLocationCoordinate2DIsValid(_currentLocation.coordinate)&& _currentLocation.coordinate.latitude != 0 && _currentLocation.coordinate.longitude != 0) {
-        [self _saveLastKnownLocation:_currentLocation];
+    if (CLLocationCoordinate2DIsValid(_lastKnownLocation.coordinate)&& _lastKnownLocation.coordinate.latitude != 0 && _lastKnownLocation.coordinate.longitude != 0) {
+        [self _saveLastKnownLocation:_lastKnownLocation];
     }
 }
 
@@ -284,7 +294,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
  * Get a region of defined radius from current location only
  */
 -(CLRegion *)currentRegionWithRadius:(CLLocationDistance)radius {
-    CLLocation *workingLocation = [self.currentLocation copy];
+    CLLocation *workingLocation = [self.lastKnownLocation copy];
     CLRegion *theRegion = [[CLRegion alloc] initCircularRegionWithCenter:workingLocation.coordinate 
                                                                   radius:radius 
                                                               identifier:@"currentRegion"];
@@ -317,8 +327,8 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
     }];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        BOOL existingLocationIsAccurate = [self isLocationWithinRequiredAccuracy:self.currentLocation];
-        BOOL existingLocationIsRecent = [self isReadingRecentForLocation:self.currentLocation];
+        BOOL existingLocationIsAccurate = [self isLocationWithinRequiredAccuracy:self.lastKnownLocation];
+        BOOL existingLocationIsRecent = [self isReadingRecentForLocation:self.lastKnownLocation];
         
         // set highway mode if we are moving faster than about 45mph (20mps)
         self.highwayMode = newLocation.speed >= 20.00;
@@ -425,7 +435,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
 // updates the property currentLocation and sends out notification. Calls stop CL from updating if appropriate
 -(void) _saveLocationAndNotifyObservers:(CLLocation *)locationToSave {
     
-    self.currentLocation = locationToSave;
+    self.lastKnownLocation = locationToSave;
     
     NSNumber *activeNO = [NSNumber numberWithBool:NO];
     [self performSelectorOnMainThread:@selector(_updateStatusBarStyleActive:) withObject:activeNO waitUntilDone:NO];
@@ -479,7 +489,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
 - (void) _startUpdatingLocation
 {
     // Setting curentLocation to nil ensures we will try to update with accurate location on next cycle
-    _currentLocation = nil;
+    _lastKnownLocation = nil;
     if ([CLLocationManager significantLocationChangeMonitoringAvailable])
     {
         if (OUTPUT_LOGS) NSLog(@"Stopped monitoring for significant changes");
@@ -570,7 +580,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
 
 // Changing status bar to indicate status of location updates
 -(void) _updateStatusBarStyleActive:(NSNumber *)active {
-    BOOL existingLocationIsAccurate = [self isLocationWithinRequiredAccuracy:self.currentLocation];
+    BOOL existingLocationIsAccurate = [self isLocationWithinRequiredAccuracy:self.lastKnownLocation];
     UIApplication *app = [UIApplication sharedApplication];
     if ([active boolValue]) {
         if (existingLocationIsAccurate) {
@@ -598,7 +608,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
     [[NSNotificationCenter defaultCenter] postNotification:aNotification];
     
     // get current location update
-    self.currentLocation = nil;
+    self.lastKnownLocation = nil;
     [self _startUpdatingLocation];
 }
 
@@ -611,7 +621,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
     [[NSNotificationCenter defaultCenter] postNotification:aNotification];
     
     // get current location update
-    self.currentLocation = nil;
+    self.lastKnownLocation = nil;
     [self _startUpdatingLocation];
 }
 
@@ -664,7 +674,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
 - (void) dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    self.currentLocation = nil;
+    self.lastKnownLocation = nil;
     _pendingLocationsQueue = nil;
     [_pendingLocationsTimer invalidate];
     _pendingLocationsTimer = nil;
