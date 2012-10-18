@@ -22,6 +22,7 @@
 		1B3B7E10162903B500AB3227 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B3B7E0F162903B500AB3227 /* CoreLocation.framework */; };
 		1B3B7E12162903CF00AB3227 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1B3B7E11162903CF00AB3227 /* MapKit.framework */; };
 		1B3B7E151629207200AB3227 /* LMAnnotation.m in Sources */ = {isa = PBXBuildFile; fileRef = 1B3B7E141629207200AB3227 /* LMAnnotation.m */; };
+		1BA75A68162F775900A9E1F1 /* LMPinTracker.m in Sources */ = {isa = PBXBuildFile; fileRef = 1BA75A67162F775900A9E1F1 /* LMPinTracker.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,8 @@
 		1B3B7E131629207200AB3227 /* LMAnnotation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LMAnnotation.h; sourceTree = "<group>"; };
 		1B3B7E141629207200AB3227 /* LMAnnotation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LMAnnotation.m; sourceTree = "<group>"; };
 		1B3B7E16162A20B600AB3227 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = text; path = README.md; sourceTree = "<group>"; };
+		1BA75A66162F775900A9E1F1 /* LMPinTracker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LMPinTracker.h; path = PinTracker/LMPinTracker.h; sourceTree = SOURCE_ROOT; };
+		1BA75A67162F775900A9E1F1 /* LMPinTracker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LMPinTracker.m; path = PinTracker/LMPinTracker.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -99,6 +102,7 @@
 		1B3B7DEC1628FF6800AB3227 /* LocateMe */ = {
 			isa = PBXGroup;
 			children = (
+				1BA75A64162F76BB00A9E1F1 /* Pin Tracker */,
 				1B3B7E091628FFD200AB3227 /* LocationHandler */,
 				1B3B7DF51628FF6800AB3227 /* LMAppDelegate.h */,
 				1B3B7DF61628FF6800AB3227 /* LMAppDelegate.m */,
@@ -133,6 +137,15 @@
 				1B3B7E0D162902AD00AB3227 /* TTLocationHandler.m */,
 			);
 			name = LocationHandler;
+			sourceTree = "<group>";
+		};
+		1BA75A64162F76BB00A9E1F1 /* Pin Tracker */ = {
+			isa = PBXGroup;
+			children = (
+				1BA75A66162F775900A9E1F1 /* LMPinTracker.h */,
+				1BA75A67162F775900A9E1F1 /* LMPinTracker.m */,
+			);
+			name = "Pin Tracker";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -207,6 +220,7 @@
 				1B3B7E031628FF6800AB3227 /* LMViewController.m in Sources */,
 				1B3B7E0E162902AD00AB3227 /* TTLocationHandler.m in Sources */,
 				1B3B7E151629207200AB3227 /* LMAnnotation.m in Sources */,
+				1BA75A68162F775900A9E1F1 /* LMPinTracker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -325,6 +339,7 @@
 				1B3B7E081628FF6800AB3227 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

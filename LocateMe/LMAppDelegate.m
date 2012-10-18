@@ -24,6 +24,11 @@
 
 #import "LMAppDelegate.h"
 #import "TTLocationHandler.h"
+#import "LMPinTracker.h"
+
+@interface LMAppDelegate()
+@property(nonatomic, strong) LMPinTracker *pinTracker;
+@end
 
 @implementation LMAppDelegate
 
@@ -34,7 +39,10 @@
      // to simulate the location events.
      */
     
-    // Override point for customization after application launch.
+    // Set up the PinTracker
+    self.pinTracker = [[LMPinTracker alloc]init];
+    self.pinTracker.uploadInterval = 30.00;
+    
     // Set up the location handler.
     self.sharedLocationHandler = [[TTLocationHandler alloc] init];
     self.sharedLocationHandler.locationManagerPurposeString =
