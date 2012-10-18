@@ -66,12 +66,17 @@
         //Enter Background Operations here
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSDictionary *lastKnowLocationInfo = [defaults objectForKey:@"LAST_KNOWN_LOCATION"];
+        
+        // Alternately, lastKnownLocation could be obtained directly like so:
+        CLLocation *lastKnownLocation = [[TTLocationHandler sharedLocationHandler] lastKnownLocation];
+        NSLog(@"Alternate location object directly from handler is \n%@",lastKnownLocation);
+        
         if (!lastKnowLocationInfo) {
             return;
         }
         
         // Store the location into your sqlite database here
-        NSLog(@"Received location info: %@ \n Ready for store to database",lastKnowLocationInfo);
+        NSLog(@"Retrieved from defaults location info: \n%@ \n Ready for store to database",lastKnowLocationInfo);
         
         NSTimeInterval timeSinceLastUpload = [_mostRecentUploadDate timeIntervalSinceNow] * -1;
         
