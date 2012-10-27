@@ -28,18 +28,27 @@
 #import "LMPinTracker.h"
 
 @interface LMViewController ()
+// Outlets
+@property (nonatomic, weak) IBOutlet UIButton *resetButton;
+@property (nonatomic, weak) IBOutlet UISwitch *backgroundToggleSwitch;
+@property (nonatomic, weak) IBOutlet UITextField *refreshIntervalField;
+@property (nonatomic, weak) IBOutlet UIStepper *refreshIntervalStepper;
+// Private Properties
 @property (nonatomic, strong)NSArray *locationsArray;
 @property (nonatomic, weak)IBOutlet MKMapView *mapView;
-
+// Private Methods
 -(void)handleLocationUpdate;
 -(void)updateLocationsArray;
 -(void)refreshMapView;
+-(void)clearStoredLocations;
+// Actions
+-(IBAction)resetButtonTouched:(id)sender;
+-(IBAction)backgroundSwitchTouche:(id)sender;
+-(IBAction)intervalStepActivated:(id)sender;
 @end
 
 
 @implementation LMViewController
-
-#pragma mark - View LifeCycle
 
 - (void)viewDidLoad
 {
@@ -52,6 +61,13 @@
     
     NSNotificationCenter *defaultNotificatoinCenter = [NSNotificationCenter defaultCenter];
     [defaultNotificatoinCenter addObserver:self selector:@selector(handleLocationUpdate) name:PinLoggerDidSaveNewLocation object:nil];
+    
+    TTLocationHandler *sharedHandler = [TTLocationHandler sharedLocationHandler];
+    NSInteger interval = sharedHandler.recencyThreshold;
+    self.refreshIntervalStepper.value = interval;
+    self.refreshIntervalField.text = [NSString stringWithFormat:@"%i sec",interval];
+    
+    self.backgroundToggleSwitch.on = sharedHandler.continuesUpdatingOnBattery;
 }
 
 -(void)viewDidDisappear:(BOOL)animated
@@ -115,19 +131,66 @@
     for (int index = 0; index < numberOfPins; index++) {
         NSString *theKey = [NSString stringWithFormat:@"location%i", index];
         NSDictionary *savedDict = [defaults objectForKey:theKey];
-        if (!savedDict) break;
         
-        LMAnnotation *theAnnotation = [[LMAnnotation alloc] init];
-        CLLocationDegrees lat = [[savedDict valueForKey:@"LATITUDE"] doubleValue];
-        CLLocationDegrees Long = [[savedDict valueForKey:@"LONGITUDE"] doubleValue];
-        CLLocationCoordinate2D theCoordinate = CLLocationCoordinate2DMake(lat, Long);
-        theAnnotation.coordinate = theCoordinate;
-        theAnnotation.title = [NSString stringWithFormat:@"Location%i", index];
-        
-        [mArray addObject:theAnnotation];
+        if (savedDict) {
+            LMAnnotation *theAnnotation = [[LMAnnotation alloc] init];
+            CLLocationDegrees lat = [[savedDict valueForKey:@"LATITUDE"] doubleValue];
+            CLLocationDegrees Long = [[savedDict valueForKey:@"LONGITUDE"] doubleValue];
+            CLLocationCoordinate2D theCoordinate = CLLocationCoordinate2DMake(lat, Long);
+            theAnnotation.coordinate = theCoordinate;
+            theAnnotation.title = [NSString stringWithFormat:@"Location%i", index];
+            
+            [mArray addObject:theAnnotation];
+        }
     }
     
     self.locationsArray = [NSArray arrayWithArray:mArray];
+}
+
+-(void)clearStoredLocations
+{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    int numberOfPins = [defaults integerForKey:@"NUMBER_OF_PINS_SAVED"];
+    
+    for (int counter = 0; counter < numberOfPins; counter++) {
+        NSString *key = [NSString stringWithFormat:@"location%i",counter];
+        [defaults removeObjectForKey:key];
+    }
+}
+
+#pragma mark - Actions
+
+-(IBAction)resetButtonTouched:(id)sender
+{
+    [self clearStoredLocations];
+    NSArray *emptyArray = [NSArray array];
+    self.locationsArray = emptyArray;
+    [self refreshMapView];
+}
+
+-(IBAction)backgroundSwitchTouche:(id)sender
+{
+    UISwitch *theSwitch = (UISwitch *)sender;
+    TTLocationHandler *sharedHandler = [TTLocationHandler sharedLocationHandler];
+    sharedHandler.continuesUpdatingOnBattery = theSwitch.on;
+}
+
+-(IBAction)intervalStepActivated:(id)sender
+{
+    UIStepper *stepper = (UIStepper *)sender;
+    int newInterval = stepper.value;
+    TTLocationHandler *sharedHandler = [TTLocationHandler sharedLocationHandler];
+    sharedHandler.recencyThreshold = newInterval;
+    self.refreshIntervalField.text = [NSString stringWithFormat:@"%i sec",newInterval];
+    
+    if (newInterval >= 60) {
+        stepper.stepValue = 120;
+    } else if (newInterval >= 30) {
+        stepper.stepValue = 15;
+    } else {
+        stepper.stepValue = 5;
+    }
+    
 }
 
 
