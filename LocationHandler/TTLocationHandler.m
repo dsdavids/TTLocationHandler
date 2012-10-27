@@ -71,6 +71,7 @@
 #define OUTPUT_LOGS 1
 
 static const int MAX_TRIES_FOR_ACCURACY = 10;
+static const double DEFAULT_DISTANCE_FILTER = 50.00;
 
 + (id)sharedLocationHandler {
     static dispatch_once_t pred;
@@ -106,7 +107,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
       self.locationManager = [[CLLocationManager alloc] init];
       self.locationManager.delegate = self;
       self.locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters;
-      self.locationManager.distanceFilter = 10.0f;
+      self.locationManager.distanceFilter = DEFAULT_DISTANCE_FILTER;
       self.requiredAccuracy = 10.0f;
       // New property for iOS6
       if ([self.locationManager respondsToSelector:@selector(activityType)]) {
@@ -151,7 +152,7 @@ static const int MAX_TRIES_FOR_ACCURACY = 10;
      */
     if (highwayMode != _highwayMode) {
         CGFloat highwayDistanceFilter = 400.00f;
-        CGFloat cityDistanceFilter = 10.00f;
+        CGFloat cityDistanceFilter = DEFAULT_DISTANCE_FILTER;
         if (highwayMode) {
             if (OUTPUT_LOGS) NSLog(@"Setting Highway Mode");
             self.locationManager.distanceFilter = highwayDistanceFilter;
