@@ -156,7 +156,7 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
     if (highwayMode != _highwayMode) {
         CGFloat highwayDistanceFilter = 400.00f;
         CGFloat cityDistanceFilter = DEFAULT_DISTANCE_FILTER;
-        if (highwayMode) {
+        if (highwayMode && self.recencyThreshold > 15.0) {
             if (OUTPUT_LOGS) NSLog(@"Setting Highway Mode");
             self.locationManager.distanceFilter = highwayDistanceFilter;
         } else {
