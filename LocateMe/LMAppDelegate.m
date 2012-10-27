@@ -32,6 +32,17 @@
 
 @implementation LMAppDelegate
 
++(void)initialize {
+    
+    NSMutableDictionary *defs = [NSMutableDictionary dictionary];
+    
+    [defs setObject:[NSNumber numberWithInt:25] forKey:@"NUMBER_OF_PINS_SAVED"];
+    
+    [[NSUserDefaults standardUserDefaults] registerDefaults:defs];
+    
+    [super initialize];
+}
+
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     /*

@@ -30,6 +30,7 @@
     NSDate *_mostRecentUploadDate;
 }
 
+-(void)storeMostRecentLocationInfo;
 -(void)handleLocationUpdate;
 -(void)uploadCurrentData;
 
@@ -49,6 +50,30 @@
     return self;
 }
 
+-(void)storeMostRecentLocationInfo
+{
+    static int locationIndex = 0;
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSDictionary *lastKnowLocationInfo = [defaults objectForKey:@"LAST_KNOWN_LOCATION"];
+    if (!lastKnowLocationInfo) {
+        return;
+    }
+    
+    // store the location info
+    NSString *theKey = [NSString stringWithFormat:@"location%i", locationIndex];
+    [defaults setObject:[NSDictionary dictionaryWithDictionary:lastKnowLocationInfo] forKey:theKey];
+    
+    int numberOfPinsSaved = [defaults integerForKey:@"NUMBER_OF_PINS_SAVED"];
+    
+    if (locationIndex == numberOfPinsSaved) {
+        locationIndex = 0;
+        return;
+    }
+    
+    locationIndex++;
+}
+
 -(void)handleLocationUpdate
 {
     UIApplication *app = [UIApplication sharedApplication];
@@ -64,6 +89,8 @@
 
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         //Enter Background Operations here
+        [self storeMostRecentLocationInfo];
+        
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSDictionary *lastKnowLocationInfo = [defaults objectForKey:@"LAST_KNOWN_LOCATION"];
         
@@ -86,6 +113,10 @@
             
         // Close out task Idenetifier on main queue
         dispatch_async(dispatch_get_main_queue(), ^{
+            // Send notification for any class that needs to know
+            NSNotification *aNotification = [NSNotification notificationWithName:PinLoggerDidSaveNewLocation object:[lastKnownLocation copy]];
+            [[NSNotificationCenter defaultCenter] postNotification:aNotification];
+            
             if (locationUpdateTaskID != UIBackgroundTaskInvalid) {
                 [app endBackgroundTask:locationUpdateTaskID];
                 locationUpdateTaskID = UIBackgroundTaskInvalid;
@@ -105,3 +136,6 @@
 }
 
 @end
+
+// Notification names
+NSString* const PinLoggerDidSaveNewLocation = @"PinLoggerDidSaveNewLocation";

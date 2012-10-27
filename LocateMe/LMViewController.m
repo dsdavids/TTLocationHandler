@@ -25,6 +25,7 @@
 #import "LMViewController.h"
 #import "TTLocationHandler.h"
 #import "LMAnnotation.h"
+#import "LMPinTracker.h"
 
 @interface LMViewController ()
 @property (nonatomic, strong)NSArray *locationsArray;
@@ -33,13 +34,12 @@
 -(void)handleLocationUpdate;
 -(void)updateLocationsArray;
 -(void)refreshMapView;
--(void)storeMostRecentLocationInfo;
 @end
 
 
 @implementation LMViewController
 
-#define NUMBER_OF_LOCATIONS_TO_HOLD 25
+#pragma mark - View LifeCycle
 
 - (void)viewDidLoad
 {
@@ -51,7 +51,23 @@
     [self refreshMapView];
     
     NSNotificationCenter *defaultNotificatoinCenter = [NSNotificationCenter defaultCenter];
-    [defaultNotificatoinCenter addObserver:self selector:@selector(handleLocationUpdate) name:LocationHandlerDidUpdateLocation object:nil];
+    [defaultNotificatoinCenter addObserver:self selector:@selector(handleLocationUpdate) name:PinLoggerDidSaveNewLocation object:nil];
+}
+
+-(void)viewDidDisappear:(BOOL)animated
+{
+    [super viewDidDisappear:animated];
+    
+    NSNotificationCenter *defaultNotificationCenter = [NSNotificationCenter defaultCenter];
+    [defaultNotificationCenter removeObserver:self name:PinLoggerDidSaveNewLocation object:nil];
+}
+
+-(void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    
+    NSNotificationCenter *defaultNotificatoinCenter = [NSNotificationCenter defaultCenter];
+    [defaultNotificatoinCenter addObserver:self selector:@selector(handleLocationUpdate) name:PinLoggerDidSaveNewLocation object:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -64,6 +80,8 @@
 
 -(void)refreshMapView
 {
+    NSArray *oldAnnotations = [_mapView.annotations filteredArrayUsingPredicate:[NSPredicate predicateWithFormat:@"!(self isKindOfClass: %@)", [MKUserLocation class]]];
+    [self.mapView removeAnnotations:oldAnnotations];
     MKMapRect zoomRect = MKMapRectNull;
     for (id <MKAnnotation> annotation in self.locationsArray) {
         CLLocationCoordinate2D thisLocation = annotation.coordinate;
@@ -84,39 +102,17 @@
 
 -(void)handleLocationUpdate
 {
-    UIApplication *app = [UIApplication sharedApplication];
-    __block UIBackgroundTaskIdentifier thisTaskID = [app beginBackgroundTaskWithExpirationHandler:^{
-    dispatch_async(dispatch_get_main_queue(), ^{
-            if (thisTaskID != UIBackgroundTaskInvalid) {
-                // *** CONSIDER MORE APPROPRIATE RESPONSE TO EXPIRATION *** //
-                [app endBackgroundTask:thisTaskID];
-                thisTaskID = UIBackgroundTaskInvalid;
-            }
-        });
-    }];
-
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-            // Update the info in background thread
-            [self storeMostRecentLocationInfo];
-            [self updateLocationsArray];
-            
-            // Refresh map and close out task Idenetifier on main queue
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [self refreshMapView];
-                
-                if (thisTaskID != UIBackgroundTaskInvalid) {
-                    [app endBackgroundTask:thisTaskID];
-                    thisTaskID = UIBackgroundTaskInvalid;
-                }
-            });
-        });
+    [self updateLocationsArray];
+    [self refreshMapView];
 }
 
 -(void)updateLocationsArray
 {
-    NSMutableArray *mArray = [NSMutableArray array];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    for (int index = 0; index < NUMBER_OF_LOCATIONS_TO_HOLD; index++) {
+    int numberOfPins = [defaults integerForKey:@"NUMBER_OF_PINS_SAVED"];
+    NSMutableArray *mArray = [NSMutableArray arrayWithCapacity:numberOfPins];
+    
+    for (int index = 0; index < numberOfPins; index++) {
         NSString *theKey = [NSString stringWithFormat:@"location%i", index];
         NSDictionary *savedDict = [defaults objectForKey:theKey];
         if (!savedDict) break;
@@ -134,27 +130,6 @@
     self.locationsArray = [NSArray arrayWithArray:mArray];
 }
 
--(void)storeMostRecentLocationInfo
-{
-    static int locationIndex = 0;
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *lastKnowLocationInfo = [defaults objectForKey:@"LAST_KNOWN_LOCATION"];
-    if (!lastKnowLocationInfo) {
-        return;
-    }
-    
-    // store the location info
-    NSString *theKey = [NSString stringWithFormat:@"location%i", locationIndex];
-    [defaults setObject:[NSDictionary dictionaryWithDictionary:lastKnowLocationInfo] forKey:theKey];
-    
-    if (locationIndex == NUMBER_OF_LOCATIONS_TO_HOLD) {
-        locationIndex = 0;
-        return;
-    }
-
-    locationIndex++;    
-}
 
 #pragma mark -
 #pragma mark MKMapViewDelegate
