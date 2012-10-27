@@ -40,6 +40,7 @@
 -(void) _batteryStateDidChange:(NSNotification *)notification;
 -(void) _saveLastKnownLocation:(CLLocation *)inLocation;
 -(void) _updateStatusBarStyleActive:(NSNumber *)active;
+- (BOOL) isLocation:(CLLocation *)firstLocation confirmedMinimumDistance:(double)minDistance fromPreviousLocation:(CLLocation *)secondLocation;
 @end
 
 /**
@@ -64,6 +65,7 @@
 @synthesize continuesUpdatingWhileActive = _continuesUpdatingWhileActive;
 @synthesize continuesUpdatingOnBattery = _continuesUpdatingOnBattery;
 @synthesize updatesInBackgroundWhenCharging = _updatesInBackgroundWhenCharging;
+@synthesize ignorePossibleDuplicates = _ignorePossibleDuplicates;
 @synthesize requiredAccuracy = _requiredAccuracy;
 @synthesize recencyThreshold = _recencyThreshold;
 @synthesize locationManagerPurposeString = _locationManagerPurposeString;
@@ -98,6 +100,7 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
       _continuesUpdatingWhileActive = YES;
       _continuesUpdatingOnBattery = NO;
       _updatesInBackgroundWhenCharging = YES;
+      _ignorePossibleDuplicates = YES;
       
       // Initial highway mode setting is NO
       // By default it will change to yes whenever speed is over 22mps (about 45mph).
@@ -417,6 +420,7 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         //Enter Background Operations here
         _pendingLocationsTimer = nil;
+        
         [self _saveLocationAndNotifyObservers:[_pendingLocationsQueue lastObject]];
         
         if (OUTPUT_LOGS) NSLog(@"Time limit reached, no better location came in. Accepted location %i",_pendingLocationsQueue.count);
@@ -435,6 +439,12 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
 
 // updates the property currentLocation and sends out notification. Calls stop CL from updating if appropriate
 -(void) _saveLocationAndNotifyObservers:(CLLocation *)locationToSave {
+    
+    if (self.ignorePossibleDuplicates && _lastKnownLocation && ![self isLocation:locationToSave confirmedMinimumDistance:DEFAULT_DISTANCE_FILTER fromPreviousLocation:_lastKnownLocation]) {
+        // Set to ignore possible duplicates, we have a last known location saved and the new location is not far enough from last known to confirm
+        [self _stopUpdatingLocation];
+        return;
+    }
     
     self.lastKnownLocation = locationToSave;
     
@@ -671,6 +681,25 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
   }
 }
 
+/* Tests the two supplied locations adjusting for the accuracy to confirm for certain they are at least x meters apart
+ * Returns yes if the locations are confirmed minDistance apart
+ * Returns no if they are within minDistance or if they are within the margin of error and may possibly be closer than minDistance
+ */
+- (BOOL) isLocation:(CLLocation *)firstLocation confirmedMinimumDistance:(double)minDistance fromPreviousLocation:(CLLocation *)secondLocation
+{
+    if (!firstLocation || !secondLocation) {
+        return NO;
+    }
+    
+    CGFloat combinedAdjustment = firstLocation.horizontalAccuracy + secondLocation.horizontalAccuracy;
+    CGFloat adjustedDistanceFilter = minDistance + combinedAdjustment;
+    
+    CLLocationDistance unAdjustedDistance = [firstLocation distanceFromLocation:secondLocation];
+    
+    return unAdjustedDistance >= adjustedDistanceFilter;
+    
+}
+
 //! Standard dealloc
 - (void) dealloc
 {
@@ -680,6 +709,7 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
     [_pendingLocationsTimer invalidate];
     _pendingLocationsTimer = nil;
 }
+
 
 @end
 

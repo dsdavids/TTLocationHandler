@@ -55,6 +55,7 @@
 @property (nonatomic) BOOL continuesUpdatingWhileActive;
 @property (nonatomic) BOOL continuesUpdatingOnBattery;
 @property (nonatomic) BOOL updatesInBackgroundWhenCharging;
+@property (nonatomic) BOOL ignorePossibleDuplicates;
 @property (nonatomic) NSInteger recencyThreshold;
 @property (nonatomic) CLLocationAccuracy requiredAccuracy;
 @property (nonatomic, copy) NSString *locationManagerPurposeString;
