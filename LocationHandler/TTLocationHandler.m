@@ -69,11 +69,13 @@
 @synthesize requiredAccuracy = _requiredAccuracy;
 @synthesize recencyThreshold = _recencyThreshold;
 @synthesize locationManagerPurposeString = _locationManagerPurposeString;
+@synthesize walkMode = _walkMode;
 
 #define OUTPUT_LOGS 1
 
 static const int MAX_TRIES_FOR_ACCURACY = 10;
 static const double DEFAULT_DISTANCE_FILTER = 50.00;
+static const double WALK_DISTANCE_FILTER = 10.00;
 
 + (id)sharedLocationHandler {
     static dispatch_once_t pred;
@@ -101,6 +103,7 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
       _continuesUpdatingOnBattery = NO;
       _updatesInBackgroundWhenCharging = YES;
       _ignorePossibleDuplicates = YES;
+      _walkMode = NO;
       
       // Initial highway mode setting is NO
       // By default it will change to yes whenever speed is over 22mps (about 45mph).
@@ -156,6 +159,9 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
     if (highwayMode != _highwayMode) {
         CGFloat highwayDistanceFilter = 400.00f;
         CGFloat cityDistanceFilter = DEFAULT_DISTANCE_FILTER;
+        if (self.walkMode) {
+            cityDistanceFilter = WALK_DISTANCE_FILTER;
+        }
         if (highwayMode && self.recencyThreshold > 15.0) {
             if (OUTPUT_LOGS) NSLog(@"Setting Highway Mode");
             self.locationManager.distanceFilter = highwayDistanceFilter;
@@ -165,6 +171,28 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
         }
         _highwayMode = highwayMode;
     }
+}
+
+-(void)setWalkMode:(BOOL)walkMode {
+    if (walkMode == _walkMode) {
+        return;
+    }
+    
+    if (walkMode) {
+        self.locationManager.distanceFilter = WALK_DISTANCE_FILTER;
+        // New property for iOS6
+        if ([self.locationManager respondsToSelector:@selector(activityType)]) {
+            self.locationManager.activityType = CLActivityTypeFitness;
+        }
+    } else {
+        self.locationManager.distanceFilter = DEFAULT_DISTANCE_FILTER;
+        // New property for iOS6
+        if ([self.locationManager respondsToSelector:@selector(activityType)]) {
+            self.locationManager.activityType = CLActivityTypeAutomotiveNavigation;
+        }
+    }
+
+    _walkMode = walkMode;
 }
 
 /*
@@ -193,7 +221,9 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
                                                                verticalAccuracy:-1 
                                                                       timestamp:[lastKnownTimestamp dateByAddingTimeInterval:-self.recencyThreshold]];
         if (OUTPUT_LOGS) NSLog(@"Last Known Location Retrieved = %@",mostRecentLocation);
-        _lastKnownLocation = mostRecentLocation;
+        
+        [self _startUpdatingLocation];
+        return mostRecentLocation;
     } else {
         CLLocationDegrees defaultLat = [[defaults objectForKey:@"DEFAULT_LOCATION_LATITUDE"] doubleValue];
         CLLocationDegrees defaultLong = [[defaults objectForKey:@"DEFAULT_LOCATION_LONGITUDE"] doubleValue];
@@ -203,8 +233,11 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
                                                           horizontalAccuracy:self.requiredAccuracy * 1000 
                                                             verticalAccuracy:-1 
                                                                    timestamp:[NSDate dateWithTimeIntervalSinceNow:-self.recencyThreshold * 10]];
-        self.lastKnownLocation = defaultLocation;
+        
         if (OUTPUT_LOGS) NSLog(@"Default Location retrieved = %@",defaultLocation);
+        
+        [self _startUpdatingLocation];
+        return defaultLocation;
     }
     
     return _lastKnownLocation;
@@ -440,8 +473,13 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
 // updates the property currentLocation and sends out notification. Calls stop CL from updating if appropriate
 -(void) _saveLocationAndNotifyObservers:(CLLocation *)locationToSave {
     
-    if (self.ignorePossibleDuplicates && _lastKnownLocation && ![self isLocation:locationToSave confirmedMinimumDistance:DEFAULT_DISTANCE_FILTER fromPreviousLocation:_lastKnownLocation]) {
+    CGFloat currentDistanceFilter = DEFAULT_DISTANCE_FILTER;
+    if (self.walkMode) {
+        currentDistanceFilter = WALK_DISTANCE_FILTER;
+    }
+    if (self.ignorePossibleDuplicates && _lastKnownLocation && ![self isLocation:locationToSave confirmedMinimumDistance:currentDistanceFilter fromPreviousLocation:_lastKnownLocation]) {
         // Set to ignore possible duplicates, we have a last known location saved and the new location is not far enough from last known to confirm
+        if (OUTPUT_LOGS) NSLog(@"possibly duplicate, not far enough from previous and so this event has been ignored");
         [self _stopUpdatingLocation];
         return;
     }
@@ -500,7 +538,7 @@ static const double DEFAULT_DISTANCE_FILTER = 50.00;
 - (void) _startUpdatingLocation
 {
     // Setting curentLocation to nil ensures we will try to update with accurate location on next cycle
-    _lastKnownLocation = nil;
+    //_lastKnownLocation = nil;
     if ([CLLocationManager significantLocationChangeMonitoringAvailable])
     {
         if (OUTPUT_LOGS) NSLog(@"Stopped monitoring for significant changes");

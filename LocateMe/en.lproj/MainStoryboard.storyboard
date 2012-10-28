@@ -17,7 +17,7 @@
                                     <outlet property="delegate" destination="2" id="fEE-eU-1vx"/>
                                 </connections>
                             </mapView>
-                            <button opaque="NO" alpha="0.60000000000000009" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UYV-IP-67n">
+                            <button opaque="NO" alpha="0.70000000000000007" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UYV-IP-67n">
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
                                 <state key="normal" title="Reset">
                                     <color key="titleColor" red="0.19607843459999999" green="0.30980393290000002" blue="0.52156865600000002" alpha="1" colorSpace="calibratedRGB"/>
@@ -30,27 +30,46 @@
                                     <action selector="resetButtonTouched:" destination="2" eventType="touchUpInside" id="gtg-L7-lqR"/>
                                 </connections>
                             </button>
-                            <switch opaque="NO" alpha="0.60000000000000009" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="f9D-N8-vwg">
+                            <switch opaque="NO" alpha="0.70000000000000007" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="f9D-N8-vwg">
                                 <connections>
                                     <action selector="backgroundSwitchTouche:" destination="2" eventType="valueChanged" id="jZT-Vx-ANL"/>
                                 </connections>
                             </switch>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.60000000000000009" contentMode="left" text="Background Update" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a7g-Ih-F0b">
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.70000000000000007" contentMode="left" text="Background Update" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a7g-Ih-F0b">
                                 <color key="backgroundColor" red="0.96862745100000003" green="0.96862745100000003" blue="0.96862745100000003" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.60000000000000009" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="F3m-X0-eEb">
+                            <textField opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.70000000000000007" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" minimumFontSize="14" translatesAutoresizingMaskIntoConstraints="NO" id="F3m-X0-eEb">
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
-                            <stepper opaque="NO" clipsSubviews="YES" alpha="0.60000000000000009" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="5" minimumValue="5" maximumValue="600" stepValue="5" translatesAutoresizingMaskIntoConstraints="NO" id="Xlg-dQ-Adf">
+                            <stepper opaque="NO" clipsSubviews="YES" alpha="0.70000000000000007" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="5" minimumValue="5" maximumValue="600" stepValue="5" translatesAutoresizingMaskIntoConstraints="NO" id="Xlg-dQ-Adf">
                                 <connections>
                                     <action selector="intervalStepActivated:" destination="2" eventType="valueChanged" id="tlu-QM-yQJ"/>
                                 </connections>
                             </stepper>
-                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.60000000000000009" contentMode="left" text="Interval" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uce-Xc-3Jn">
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.70000000000000007" contentMode="left" text="Interval" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Uce-Xc-3Jn">
+                                <color key="backgroundColor" red="0.96862745100000003" green="0.96862745100000003" blue="0.96862745100000003" alpha="1" colorSpace="calibratedRGB"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" autoresizesSubviews="NO" alpha="0.70000000000000007" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XU8-fk-Nla">
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="15"/>
+                                <state key="normal" title="Vehicle">
+                                    <color key="titleColor" red="0.19607843459999999" green="0.30980393290000002" blue="0.52156865600000002" alpha="1" colorSpace="calibratedRGB"/>
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <state key="highlighted">
+                                    <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="toggleWalkMode:" destination="2" eventType="touchUpInside" id="gI6-XK-4aQ"/>
+                                </connections>
+                            </button>
+                            <label opaque="NO" clipsSubviews="YES" userInteractionEnabled="NO" alpha="0.70000000000000007" contentMode="left" text="Mode" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="vmO-h7-h0U">
                                 <color key="backgroundColor" red="0.96862745100000003" green="0.96862745100000003" blue="0.96862745100000003" alpha="1" colorSpace="calibratedRGB"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
@@ -67,15 +86,19 @@
                             <constraint firstItem="f9D-N8-vwg" firstAttribute="leading" secondItem="a7g-Ih-F0b" secondAttribute="trailing" constant="8" symbolic="YES" type="default" id="FfF-JM-dum"/>
                             <constraint firstItem="f9D-N8-vwg" firstAttribute="top" secondItem="UYV-IP-67n" secondAttribute="bottom" constant="8" symbolic="YES" type="default" id="GfP-n8-eXO"/>
                             <constraint firstItem="F3m-X0-eEb" firstAttribute="leading" secondItem="f9D-N8-vwg" secondAttribute="leading" type="default" id="ILn-35-yGa"/>
+                            <constraint firstItem="XU8-fk-Nla" firstAttribute="top" secondItem="3" secondAttribute="top" constant="193" id="Jj8-js-NxL"/>
                             <constraint firstItem="Uce-Xc-3Jn" firstAttribute="top" secondItem="3" secondAttribute="top" constant="110" id="NWp-ht-0gn"/>
                             <constraint firstItem="GdL-6B-hSh" firstAttribute="leading" secondItem="3" secondAttribute="leading" type="default" id="WE9-ib-hXU"/>
                             <constraint firstAttribute="trailing" secondItem="F3m-X0-eEb" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="d5V-VU-QAd"/>
+                            <constraint firstItem="vmO-h7-h0U" firstAttribute="baseline" secondItem="XU8-fk-Nla" secondAttribute="baseline" type="default" id="dQ3-9a-AJF"/>
                             <constraint firstItem="GdL-6B-hSh" firstAttribute="bottom" secondItem="3" secondAttribute="bottom" type="default" id="fw6-GS-tWI"/>
+                            <constraint firstItem="XU8-fk-Nla" firstAttribute="leading" secondItem="vmO-h7-h0U" secondAttribute="trailing" constant="8" symbolic="YES" type="default" id="h3E-VD-OSI"/>
                             <constraint firstItem="GdL-6B-hSh" firstAttribute="trailing" secondItem="3" secondAttribute="trailing" type="default" id="hCN-QQ-qWG"/>
                             <constraint firstItem="F3m-X0-eEb" firstAttribute="centerX" secondItem="Xlg-dQ-Adf" secondAttribute="centerX" type="default" id="o5n-7d-vw6"/>
                             <constraint firstAttribute="trailing" secondItem="f9D-N8-vwg" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="oCt-ck-zns"/>
                             <constraint firstAttribute="trailing" secondItem="UYV-IP-67n" secondAttribute="trailing" constant="20" symbolic="YES" type="default" id="sy0-0R-vaw"/>
                             <constraint firstItem="GdL-6B-hSh" firstAttribute="top" secondItem="3" secondAttribute="top" type="default" id="t8h-d2-fz9"/>
+                            <constraint firstItem="XU8-fk-Nla" firstAttribute="trailing" secondItem="Xlg-dQ-Adf" secondAttribute="trailing" type="default" id="x7F-l6-RFg"/>
                         </constraints>
                     </view>
                     <connections>
@@ -84,6 +107,7 @@
                         <outlet property="refreshIntervalField" destination="F3m-X0-eEb" id="1Sg-gD-TSr"/>
                         <outlet property="refreshIntervalStepper" destination="Xlg-dQ-Adf" id="GQq-cg-S3S"/>
                         <outlet property="resetButton" destination="UYV-IP-67n" id="wmW-u9-7HQ"/>
+                        <outlet property="walkModeToggleButton" destination="XU8-fk-Nla" id="ho4-UQ-gl0"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="4" sceneMemberID="firstResponder"/>
@@ -97,11 +121,13 @@
                 <relationship kind="action" name="backgroundSwitchTouche:"/>
                 <relationship kind="action" name="intervalStepActivated:"/>
                 <relationship kind="action" name="resetButtonTouched:"/>
+                <relationship kind="action" name="toggleWalkMode:"/>
                 <relationship kind="outlet" name="backgroundToggleSwitch" candidateClass="UISwitch"/>
                 <relationship kind="outlet" name="mapView" candidateClass="MKMapView"/>
                 <relationship kind="outlet" name="refreshIntervalField" candidateClass="UITextField"/>
                 <relationship kind="outlet" name="refreshIntervalStepper" candidateClass="UIStepper"/>
                 <relationship kind="outlet" name="resetButton" candidateClass="UIButton"/>
+                <relationship kind="outlet" name="walkModeToggleButton" candidateClass="UIButton"/>
             </relationships>
         </class>
         <class className="NSLayoutConstraint" superclassName="NSObject">

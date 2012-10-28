@@ -33,6 +33,7 @@
 @property (nonatomic, weak) IBOutlet UISwitch *backgroundToggleSwitch;
 @property (nonatomic, weak) IBOutlet UITextField *refreshIntervalField;
 @property (nonatomic, weak) IBOutlet UIStepper *refreshIntervalStepper;
+@property (nonatomic, weak) IBOutlet UIButton *walkModeToggleButton;
 // Private Properties
 @property (nonatomic, strong)NSArray *locationsArray;
 @property (nonatomic, weak)IBOutlet MKMapView *mapView;
@@ -45,19 +46,19 @@
 -(IBAction)resetButtonTouched:(id)sender;
 -(IBAction)backgroundSwitchTouche:(id)sender;
 -(IBAction)intervalStepActivated:(id)sender;
+-(IBAction)toggleWalkMode:(id)sender;
 @end
 
 
 @implementation LMViewController
+{
+    BOOL _currentWalkMode;
+}
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
-    
-    [self updateLocationsArray];
-    
-    [self refreshMapView];
     
     NSNotificationCenter *defaultNotificatoinCenter = [NSNotificationCenter defaultCenter];
     [defaultNotificatoinCenter addObserver:self selector:@selector(handleLocationUpdate) name:PinLoggerDidSaveNewLocation object:nil];
@@ -68,10 +69,17 @@
     self.refreshIntervalField.text = [NSString stringWithFormat:@"%i sec",interval];
     
     self.backgroundToggleSwitch.on = sharedHandler.continuesUpdatingOnBattery;
+    _currentWalkMode = sharedHandler.walkMode;
+    [self updateWalkButtonText];
+    
     sharedHandler = nil;
+    
+    // Set up our view
+    [self updateLocationsArray];
+    [self refreshMapView];
 }
 
--(void)viewDidDisappear:(BOOL)animated
+- (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
     
@@ -79,7 +87,7 @@
     [defaultNotificationCenter removeObserver:self name:PinLoggerDidSaveNewLocation object:nil];
 }
 
--(void)viewWillAppear:(BOOL)animated
+- (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
     
@@ -159,6 +167,15 @@
     }
 }
 
+-(void)updateWalkButtonText
+{
+    if (_currentWalkMode) {
+        [self.walkModeToggleButton setTitle:@"Walk" forState:UIControlStateNormal];
+    } else {
+        [self.walkModeToggleButton setTitle:@"Vehicle" forState:UIControlStateNormal];
+    }
+}
+
 #pragma mark - Actions
 
 -(IBAction)resetButtonTouched:(id)sender
@@ -167,6 +184,17 @@
     NSArray *emptyArray = [NSArray array];
     self.locationsArray = emptyArray;
     [self refreshMapView];
+    
+    /* Setting lastKnown to nil and then asking for location is just a hacky
+     * way of getting it to ignore the distance and recency filter and try for a new
+     * accurate location right away.
+     */
+    TTLocationHandler *handler = [TTLocationHandler sharedLocationHandler];
+    [handler setLastKnownLocation:nil];
+    CLLocation *ourLocation = handler.lastKnownLocation;
+    NSLog(@"Reset all location info\n%@",ourLocation);
+    /*
+     */
 }
 
 -(IBAction)backgroundSwitchTouche:(id)sender
@@ -194,6 +222,17 @@
         stepper.stepValue = 5;
     }
     
+}
+
+-(void)toggleWalkMode:(id)sender
+{
+    TTLocationHandler *handler = [TTLocationHandler sharedLocationHandler];
+    _currentWalkMode = !_currentWalkMode;
+    handler.walkMode = _currentWalkMode;
+    
+    [self updateWalkButtonText];
+    
+    handler = nil;
 }
 
 

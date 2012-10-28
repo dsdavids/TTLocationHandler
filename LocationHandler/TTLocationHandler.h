@@ -59,6 +59,7 @@
 @property (nonatomic) NSInteger recencyThreshold;
 @property (nonatomic) CLLocationAccuracy requiredAccuracy;
 @property (nonatomic, copy) NSString *locationManagerPurposeString;
+@property (nonatomic) BOOL walkMode;
 
 @end
 
