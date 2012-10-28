@@ -68,6 +68,7 @@
     self.refreshIntervalField.text = [NSString stringWithFormat:@"%i sec",interval];
     
     self.backgroundToggleSwitch.on = sharedHandler.continuesUpdatingOnBattery;
+    sharedHandler = nil;
 }
 
 -(void)viewDidDisappear:(BOOL)animated
@@ -173,6 +174,7 @@
     UISwitch *theSwitch = (UISwitch *)sender;
     TTLocationHandler *sharedHandler = [TTLocationHandler sharedLocationHandler];
     sharedHandler.continuesUpdatingOnBattery = theSwitch.on;
+    sharedHandler = nil;
 }
 
 -(IBAction)intervalStepActivated:(id)sender
@@ -181,6 +183,7 @@
     int newInterval = stepper.value;
     TTLocationHandler *sharedHandler = [TTLocationHandler sharedLocationHandler];
     sharedHandler.recencyThreshold = newInterval;
+    sharedHandler = nil;
     self.refreshIntervalField.text = [NSString stringWithFormat:@"%i sec",newInterval];
     
     if (newInterval >= 60) {
