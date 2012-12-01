@@ -423,7 +423,8 @@ static const double WALK_DISTANCE_FILTER = 10.00;
                 // In background on global thread, runloop may be idle
                 NSRunLoop *loop = [NSRunLoop currentRunLoop];
                 [loop addTimer:_pendingLocationsTimer forMode:NSRunLoopCommonModes];
-                [loop run];
+                NSDate *limitDate = [NSDate dateWithTimeIntervalSinceNow:_pendingLocationsTimerDuration + .1];
+                [loop runUntilDate:limitDate];
             }
         }
         
