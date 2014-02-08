@@ -68,7 +68,6 @@
 @synthesize ignorePossibleDuplicates = _ignorePossibleDuplicates;
 @synthesize requiredAccuracy = _requiredAccuracy;
 @synthesize recencyThreshold = _recencyThreshold;
-@synthesize locationManagerPurposeString = _locationManagerPurposeString;
 @synthesize walkMode = _walkMode;
 
 #define OUTPUT_LOGS 1

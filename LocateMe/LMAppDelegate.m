@@ -56,8 +56,6 @@
     
     // Set up the location handler.
     self.sharedLocationHandler = [TTLocationHandler sharedLocationHandler];
-    self.sharedLocationHandler.locationManagerPurposeString =
-    NSLocalizedString(@"LOCATION SERVICES ARE REQUIRED FOR THE PURPOSES OF THE APPLICATION TESTING", @"Location services request purpose string.");
     
     // Set background status. Update continuosly in background only when plugged in or regardless of power state.
     self.sharedLocationHandler.updatesInBackgroundWhenCharging = YES;
