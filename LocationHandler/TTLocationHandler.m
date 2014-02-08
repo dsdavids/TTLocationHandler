@@ -120,11 +120,6 @@ static const double WALK_DISTANCE_FILTER = 10.00;
           self.locationManager.activityType = CLActivityTypeAutomotiveNavigation;
       }
       
-      // Tell the user why we need location services. This is default message,
-      // set self.locationManagerPurposeString from appDelegate for custom message.
-      self.locationManager.purpose =
-                NSLocalizedString(@"LOCATION SERVICES IS AN IMPORTANT FEATURE ALLOWING ACCESS TO YOUR GPS AND WI-FI HARDWARE TO ATTAIN POSITION INFO", @"Default string for location services enable dialog");
-      
       _pendingLocationsQueue = [[NSMutableArray alloc] init];
       _pendingLocationsTimerDuration = 10;
 
@@ -253,11 +248,6 @@ static const double WALK_DISTANCE_FILTER = 10.00;
     }
 }
 
--(void)setLocationManagerPurposeString:(NSString *)locationManagerPurposeString {
-    _locationManagerPurposeString = [locationManagerPurposeString copy];
-    self.locationManager.purpose = _locationManagerPurposeString;
-}
-
 -(void)setUpdatesInBackgroundWhenCharging:(BOOL)updatesInBackgroundWhenCharging {
     // If it already is set the same, do nothing
     if (_updatesInBackgroundWhenCharging == updatesInBackgroundWhenCharging) {
@@ -293,7 +283,7 @@ static const double WALK_DISTANCE_FILTER = 10.00;
 
 - (BOOL)registerNotificationForLocation:(CLLocation *)myLocation withRadius:(NSNumber *)myRadius assignIdentifier:(NSString *)identifier {
     // Do not create regions if support is unavailable or disabled.
-    if ( ![CLLocationManager regionMonitoringAvailable] || ![CLLocationManager regionMonitoringEnabled] ) {
+    if ( ![CLLocationManager regionMonitoringAvailable]) {
         return NO;
     }
     
@@ -309,8 +299,7 @@ static const double WALK_DISTANCE_FILTER = 10.00;
     // Create the region and start monitoring it.
     CLRegion* theRegion = [[CLRegion alloc] initCircularRegionWithCenter:theCoordinate
                                                                radius:theRadius identifier:identifier];
-    [self.locationManager startMonitoringForRegion:theRegion
-                                   desiredAccuracy:kCLLocationAccuracyNearestTenMeters];
+    [self.locationManager startMonitoringForRegion:theRegion];
     if (OUTPUT_LOGS) NSLog(@"Registered Region");
     return YES;
 }
@@ -346,10 +335,9 @@ static const double WALK_DISTANCE_FILTER = 10.00;
  ** Main delegate method for CLLocationManager.
  ** Called when location is updated - makes decisions about whether or not to update class instance variable currentLocation
  */
-- (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
+-(void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
-    // since the oldLocation might be from some previous use of core location, we need to make sure we're getting data from this run
-    if (oldLocation == nil) return;
+    CLLocation *locationToTest = [locations lastObject];
     
     UIApplication *app = [UIApplication sharedApplication];
     __block UIBackgroundTaskIdentifier UpdatingLocationTaskID = [app beginBackgroundTaskWithExpirationHandler:^{
@@ -368,7 +356,7 @@ static const double WALK_DISTANCE_FILTER = 10.00;
         BOOL existingLocationIsRecent = [self isReadingRecentForLocation:self.lastKnownLocation];
         
         // set highway mode if we are moving faster than about 45mph (20mps)
-        self.highwayMode = newLocation.speed >= 20.00;
+        self.highwayMode = locationToTest.speed >= 20.00;
         
         [self _syncBackgroundUpdatesFlagWithBatteryState];
         
@@ -388,12 +376,12 @@ static const double WALK_DISTANCE_FILTER = 10.00;
              ** We are also setting a cap, if we already have the max number of locations pending we will go ahead and take
              ** this one regardless of accuracy.
              */
-            if ([self isLocationWithinRequiredAccuracy:newLocation] ) {
+            if ([self isLocationWithinRequiredAccuracy:locationToTest] ) {
                 // New location is good, clear the pending queue and save this one.
                 [_pendingLocationsTimer invalidate];
                 _pendingLocationsTimer = nil;
                 [_pendingLocationsQueue removeAllObjects];
-                [self _saveLocationAndNotifyObservers:[newLocation copy]];
+                [self _saveLocationAndNotifyObservers:[locationToTest copy]];
                 
                 if (OUTPUT_LOGS) NSLog(@"New, accurate location was set");
                 
@@ -409,7 +397,7 @@ static const double WALK_DISTANCE_FILTER = 10.00;
             } else {
                 // It's not within our requested accuracy preference and we haven't reached limit of tries
                 // save to the queue and see if we get a better one before our set wait time expiration.
-                [_pendingLocationsQueue addObject:[newLocation copy]];
+                [_pendingLocationsQueue addObject:[locationToTest copy]];
                 if (OUTPUT_LOGS) NSLog(@"Location %i queued for possible acceptance",_pendingLocationsQueue.count);
                 
                 // set up a timer to limit how long we'll wait before taking what we have.
@@ -676,7 +664,7 @@ static const double WALK_DISTANCE_FILTER = 10.00;
 }
 
 //! ONLY IMPLEMENTED on IPHONE 4
-- (void)locationManager:(CLLocationManager *)manager monitoringDidFailForRegion:(CLRegion *)regionwithError:(NSError *)error
+- (void)locationManager:(CLLocationManager *)manager monitoringDidFailForRegion:(CLRegion *)region withError:(NSError *)error
 {
   if (OUTPUT_LOGS) NSLog(@"Error monitoring");
 }
